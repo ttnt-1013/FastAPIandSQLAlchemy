@@ -10,6 +10,7 @@ from app.database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+crud.initialize_status(SessionLocal())
 
 # DBセッションの作成
 def get_db():
@@ -18,15 +19,7 @@ def get_db():
        yield db
    finally:
        db.close()
-
-def init():
-    db = SessionLocal()
-    db.query(models.Status).delete()
-    db_status = models.Status(status=0)
-    db.add(db_status)
-    db.commit()
-    db.refresh(db_status)
-    
+ 
 @app.get("/get-status/")
 def get_status(db: Session = Depends(get_db)):
    return crud.get_status(db)
@@ -34,5 +27,3 @@ def get_status(db: Session = Depends(get_db)):
 @app.post("/update-status/")
 def update_status(status: schemas.StatusUpdate, db: Session = Depends(get_db)):
    return crud.update_status(db=db, status=status)
-
-init()
